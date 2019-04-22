@@ -14,9 +14,9 @@ type state interface {
 
 // game states
 var (
-	menu = &menuState{}
-	// playing = &playState{}
-	// dead    = &scoreState{}
+	menu  = &menuState{}
+	game  = &gameState{}
+	score = &scoreState{}
 )
 
 func run() {

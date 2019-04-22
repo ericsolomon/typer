@@ -8,19 +8,17 @@ import (
 	"golang.org/x/image/font/basicfont"
 )
 
-type menuState struct {
+type scoreState struct {
 	selectedItem int
 	items        []*text.Text
 }
 
-func (s *menuState) enter(from state) {
+func (s *scoreState) enter(from state) {
 	if len(s.items) == 0 {
 		basicAtlas := text.NewAtlas(basicfont.Face7x13, text.ASCII)
 
 		for i, caption := range []string{
-			"Start",
-			"High Scores",
-			"Quit",
+			"Back",
 		} {
 			s.items = append(s.items, text.New(pixel.V(0, 0), basicAtlas))
 			s.items[i].WriteString(caption)
@@ -28,47 +26,29 @@ func (s *menuState) enter(from state) {
 	}
 }
 
-func (*menuState) leave() {}
+func (s *scoreState) leave() {}
 
-func (s *menuState) update(win *pixelgl.Window) state {
-	var nextState state = menu
+func (s *scoreState) update(win *pixelgl.Window) state {
+	var nextState state = score
 
 	if win.JustPressed(pixelgl.KeyEscape) {
-		win.SetClosed(true)
-	}
-
-	if win.JustPressed(pixelgl.KeyDown) || win.JustPressed(pixelgl.KeyJ) {
-		if s.selectedItem != len(s.items)-1 {
-			s.selectedItem += 1
-		}
-	}
-
-	if win.JustPressed(pixelgl.KeyUp) || win.JustPressed(pixelgl.KeyK) {
-		if s.selectedItem > 0 {
-			s.selectedItem -= 1
-		}
+		nextState = menu
 	}
 
 	if win.JustPressed(pixelgl.KeyEnter) || win.JustPressed(pixelgl.KeyKPEnter) {
 		switch s.selectedItem {
 		case 0:
-			nextState = game
-		case 1:
-			nextState = score
-		case 2:
-			win.SetClosed(true)
+			nextState = menu
 		}
 	}
 
 	//render menu items and selection
 	const textScale = 4
 	for i, item := range s.items {
-		rectHeight := item.Bounds().H()
 		m := pixel.IM.
 			Moved(pixel.ZV.Sub(item.Bounds().Center())).
 			Scaled(pixel.ZV, textScale).
-			Moved(win.Bounds().Center()).
-			Moved(pixel.V(0, -textScale*rectHeight*(float64(i)-float64(len(s.items))/2)))
+			Moved(pixel.V(win.Bounds().Center().X, win.Bounds().Min.X+40))
 
 		// draw rect around selected item
 		if i == s.selectedItem {
